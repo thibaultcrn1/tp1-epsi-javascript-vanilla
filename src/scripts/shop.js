@@ -1,17 +1,12 @@
 export class Shop {
-  shopElement = null;
-  items = [];
-
-  constructor(gameElement) {
+  constructor(gameElement, onBuy) {
     this.gameElement = gameElement;
+    this.onBuy = onBuy;
 
-    // Liste d'amélioration de la boutique
     this.items = [
       {
-        id: "cursor",
         name: "Cursor",
-        basePrice: 10,
-        priceIncrease: 3,
+        price: 10,
         amount: 0,
         cps: 0.1,
       },
@@ -19,17 +14,15 @@ export class Shop {
   }
 
   render() {
-    // Création de la section Shop
     this.shopElement = document.createElement("section");
     this.shopElement.id = "game-shop";
 
     this.shopElement.innerHTML = `
-        <h2>Shop</h2>
-        <div id="shop-items"></div>
+      <h2>Shop</h2>
+      <div id="shop-items"></div>
     `;
 
     this.gameElement.append(this.shopElement);
-
     this.renderItems();
   }
 
@@ -38,20 +31,27 @@ export class Shop {
     container.innerHTML = "";
 
     this.items.forEach((item) => {
-      const price = item.basePrice + item.amount * item.priceIncrease;
+      const itemEl = document.createElement("article");
+      itemEl.classList.add("shop-item");
 
-      const itemElement = document.createElement("article");
-      itemElement.classList.add("shop-item");
-
-      itemElement.innerHTML = `
+      itemEl.innerHTML = `
         <h3>${item.name}</h3>
-        <p>Gain passif : ${item.cps} / secondes</p>
+        <p>Gain passif : ${item.cps} cookies/sec</p>
+        <p>Prix : ${item.price}</p>
         <p>Possédés : ${item.amount}</p>
-        <p>Prix : ${price} cookies</p>
-        <button data-id="${item.id}">Acheter</button>
+        <button>Acheter</button>
       `;
 
-      container.append(itemElement);
+      const button = itemEl.querySelector("button");
+      button.addEventListener("click", () => {
+        this.onBuy(item);
+      });
+
+      container.append(itemEl);
     });
+  }
+
+  update() {
+    this.renderItems();
   }
 }
