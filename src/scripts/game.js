@@ -47,6 +47,11 @@ export class Game {
     this.updatePassiveGain();
   }
 
+  addCookies = (amount) => {
+    this.cookies += amount;
+    this.updateScore();
+  };
+
   updateScore() {
     this.scoreElement.innerHTML = `
       <span>${this.cookies.toFixed(1)} cookies</span>
