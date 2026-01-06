@@ -5,9 +5,11 @@ import "../styles/game.css";
 export class Game {
   cookies = 0;
   passiveGain = 0;
+  saveTimeout = null;
 
-  constructor(config) {
-    this.cookies = config.cookies;
+  constructor(config = {}) {
+    this.cookies = config.cookies || 0;
+    this.passiveGain = config.passiveGain || 0;
     this.gameElement = document.querySelector("#game");
 
     this.clickableArea = new ClickableArea(
@@ -15,7 +17,11 @@ export class Game {
       this.onClickableAreaClick,
     );
 
-    this.shop = new Shop(this.gameElement, this.onShopBuy);
+    this.shop = new Shop(
+      this.gameElement,
+      this.onShopBuy,
+      config.items || null,
+    );
   }
 
   start() {
@@ -24,7 +30,19 @@ export class Game {
     setInterval(() => {
       this.cookies += this.passiveGain;
       this.updateScore();
+      // Sauvegarde après gain passif (avec debounce)
+      this.debouncedSave();
     }, 1000);
+
+    // Sauvegarde automatique toutes les 10 secondes
+    setInterval(() => {
+      this.save();
+    }, 10000);
+
+    // Sauvegarde avant de quitter la page
+    window.addEventListener("beforeunload", () => {
+      this.save();
+    });
   }
 
   render() {
@@ -50,6 +68,7 @@ export class Game {
   addCookies = (amount) => {
     this.cookies += amount;
     this.updateScore();
+    this.debouncedSave();
   };
 
   updateScore() {
@@ -67,6 +86,7 @@ export class Game {
   onClickableAreaClick = () => {
     this.cookies += 1;
     this.updateScore();
+    this.debouncedSave();
   };
 
   onShopBuy = (item) => {
@@ -87,5 +107,38 @@ export class Game {
     this.updatePassiveGain();
 
     this.shop.update();
+    this.save();
   };
+
+  save() {
+    const config = {
+      cookies: this.cookies,
+      passiveGain: this.passiveGain,
+      items: this.shop.items,
+    };
+    localStorage.setItem("cookieClickerSave", JSON.stringify(config));
+  }
+
+  debouncedSave() {
+    // Sauvegarde avec un délai de 2 secondes pour éviter trop de sauvegardes
+    if (this.saveTimeout) {
+      clearTimeout(this.saveTimeout);
+    }
+    this.saveTimeout = setTimeout(() => {
+      this.save();
+    }, 2000);
+  }
+
+  static load() {
+    const savedData = localStorage.getItem("cookieClickerSave");
+    if (savedData) {
+      try {
+        return JSON.parse(savedData);
+      } catch (error) {
+        console.error("Erreur lors du chargement de la sauvegarde:", error);
+        return null;
+      }
+    }
+    return null;
+  }
 }

@@ -1,9 +1,9 @@
 export class Shop {
-  constructor(gameElement, onBuy) {
+  constructor(gameElement, onBuy, initialItems = null) {
     this.gameElement = gameElement;
     this.onBuy = onBuy;
 
-    this.items = [
+    this.items = initialItems || [
       {
         name: "Cursor",
         price: 10,

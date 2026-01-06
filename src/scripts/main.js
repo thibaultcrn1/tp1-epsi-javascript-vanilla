@@ -7,7 +7,8 @@ document.querySelector("#app").innerHTML = `
     <main id="game"></main>
 `;
 
-const game = new Game({ cookies: 0 });
+const savedConfig = Game.load();
+const game = new Game(savedConfig || { cookies: 0 });
 game.start();
 
 const randomSpawn = new RandomSpawn(game);
